@@ -1,0 +1,87 @@
+<?php
+/**
+ * @file
+ * field_group_markup.module
+ *
+ * Defines a field group display formatter.
+ */
+
+/**
+ * Implements hook_field_group_formatter_info().
+ *
+ * Define the field group link display formatter.
+ */
+function field_group_markup_field_group_formatter_info() {
+  $group_additions = array(
+    'markup' => array(
+      'label' => t('Markup'),
+      'format_types' => array('open'),
+      'default_formatter' => 'open',
+      'instance_settings' => array(
+        'callback' => ''
+      )
+    )
+  );
+
+  return array(
+    'display' => $group_additions,
+    'form' => $group_additions
+  );
+}
+
+/**
+ * Implements hook_field_group_formatter_settings().
+ *
+ * Provide a settings form for the field group link formatter.
+ */
+function field_group_markup_field_group_format_settings($group) {
+  if ($group->format_type == 'markup') {
+    $value = isset($group->format_settings['instance_settings']['callback']) ? $group->format_settings['instance_settings']['callback'] : '';
+
+    $form['instance_settings']['callback'] = array(
+      '#title' => t('Callback'),
+      '#type' => 'textfield',
+      '#default_value' => $value,
+      '#element_validate' => array('field_group_markup_element_validate')
+    );
+
+    return $form;
+  }
+}
+
+/**
+ * Form element validation handler for elements that must be not be _none.
+ */
+function field_group_markup_element_validate($element, &$form_state) {
+  $value = $element['#value'];
+}
+
+/**
+ * Implements hook_field_group_pre_render().
+ *
+ * Render the field group link.
+ */
+function field_group_markup_field_group_pre_render(&$element, $group, &$form) {
+  if ($group->format_type == 'markup') {
+    $element['#markup'] = '';
+  }
+}
+
+/**
+ * Implements hook_field_group_build_pre_render_alter().
+ */
+function field_group_markup_field_group_build_pre_render_alter(&$element) {
+  foreach ($element['#fieldgroups'] as $group_name => &$group) {
+    if ($group->format_type == 'markup') {
+      $callback = $group->format_settings['instance_settings']['callback'];
+
+      if (function_exists($callback)) {
+        $element[$group_name]['#weight'] = $group->weight;
+        $element[$group_name]['_markup'] = array(
+          '#type' => 'markup',
+          '#markup' => $callback($element)
+        );
+      }
+    }
+  }
+}

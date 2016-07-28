@@ -1,0 +1,6 @@
+name = Field Group Markup
+description = Markup callback.
+package = Custom
+dependencies[] = field_group
+core = 7.x
+
