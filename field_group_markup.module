@@ -13,7 +13,7 @@ function _field_group_markup_parse_selector($selector) {
   $attrs = array();
   $tag = '';
 
-  if (preg_match_all('/(^\w+)|(#\w+)|(\.\w+)|(\[\w+="[\w\s]+"\])/iu', $selector, $matches)) {
+  if (preg_match_all('/(^[\w\-]+)|(#[\w\-]+)|(\.[\w\-]+)|(\[[\w\-]+="[\w\-\s]+"\])/iu', $selector, $matches)) {
     // tag
     $matches[1] = array_values(array_filter($matches[1]));
     if (isset($matches[1][0])) {
