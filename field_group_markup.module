@@ -64,6 +64,7 @@ function field_group_markup_field_group_formatter_info() {
         'element' => '',
         'show_label' => '',
         'label_element' => '',
+        'hide_group' => '',
       )
     )
   );
@@ -85,6 +86,7 @@ function field_group_markup_field_group_format_settings($group) {
     $selector = isset($group->format_settings['instance_settings']['element']) ? $group->format_settings['instance_settings']['element'] : 'div';
     $show_label = isset($group->format_settings['instance_settings']['show_label']) ? $group->format_settings['instance_settings']['show_label'] : 0;
     $label_element = isset($group->format_settings['instance_settings']['label_element']) ? $group->format_settings['instance_settings']['label_element'] : 'div';
+    $hide_group = isset($group->format_settings['instance_settings']['hide_group']) ? $group->format_settings['instance_settings']['hide_group'] : 0;
 
     $form['instance_settings']['markup'] = array(
       '#title' => t('Markup'),
@@ -110,6 +112,12 @@ function field_group_markup_field_group_format_settings($group) {
       '#type' => 'textfield',
       '#default_value' => $label_element
     );
+    
+    $form['instance_settings']['hide_group'] = array(
+      '#title' => t('Hide empty group'),
+      '#type' => 'checkbox',
+      '#default_value' => $hide_group
+    );
 
     return $form;
   }
@@ -125,6 +133,7 @@ function field_group_markup_field_group_build_pre_render_alter(&$element) {
       $selector = isset($group->format_settings['instance_settings']['element']) ? $group->format_settings['instance_settings']['element'] : '';
       $show_label = isset($group->format_settings['instance_settings']['show_label']) ? $group->format_settings['instance_settings']['show_label'] : 0;
       $selector_label = isset($group->format_settings['instance_settings']['label_element']) ? $group->format_settings['instance_settings']['label_element'] : '';
+      $hide_group = isset($group->format_settings['instance_settings']['hide_group']) ? $group->format_settings['instance_settings']['hide_group'] : 0;
 
       $data = array(
         'tag' => '',
@@ -154,8 +163,10 @@ function field_group_markup_field_group_build_pre_render_alter(&$element) {
 
       $element[$group_name]['#markup'] = $data['markup'];
 
-      // Show hidden field group.
-      $element[$group_name]['_markup'] = array('#type' => 'markup', '#markup' => '');
+      // Show field group.
+      if (!$hide_group) {
+        $element[$group_name]['_markup'] = array('#type' => 'markup', '#markup' => '');
+      }
 
       $element[$group_name]['#suffix'] = '</' . $data['tag'] . '>';
     }
