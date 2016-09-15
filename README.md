@@ -1,2 +1,2 @@
-# field_group_markup
-Drupal module field_group_markup
+Field group с настройкай обёрток, как у dispaly suite extract.
+Позволяет делать обёртки с атрибутами для группы полей.
