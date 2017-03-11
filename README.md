@@ -1,4 +1,4 @@
-Field group с настройкай обёрток, как у dispaly suite extra.
+Field group с настройкай обёрток, как у display suite extra.
 
 Позволяет делать обёртки с атрибутами для группы полей.
 
