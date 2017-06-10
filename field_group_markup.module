@@ -7,7 +7,46 @@
  */
 
 /**
- * Parse css selector
+ * Default values format settings.
+ */
+function _field_group_markup_wrapper($tag, array $attrs = array()) {
+  // default tag
+  if (!$tag) {
+    $tag = 'div';
+  }
+
+  if ($tag || $attrs) {
+    return array(
+      '#prefix' => '<' . $tag . drupal_attributes($attrs) . '>',
+      '#suffix' => '</' . $tag . '>',
+    );
+  }
+  
+  return array(
+    '#prefix' => '',
+    '#suffix' => '',
+  );
+}
+
+/**
+ * Default values format settings.
+ */
+function _field_group_markup_format_settings_default() {
+  return array(
+    'wrapper_selector' => '',
+    'group_selector' => '',
+    'label_selector' => '',
+    'elements_group_selector' => '',
+    'markup' => '',
+    'show_label' => FALSE,
+    'hide_group' => FALSE,
+    'before' => '',
+    'after' => '',
+  );
+}
+
+/**
+ * Parse css selector.
  */
 function _field_group_markup_parse_selector($selector) {
   $attrs = array();
@@ -59,23 +98,13 @@ function field_group_markup_field_group_formatter_info() {
       'label' => t('Markup'),
       'format_types' => array('open'),
       'default_formatter' => 'open',
-      'instance_settings' => array(
-        'wrapper_selector' => '',
-        'group_selector' => '',
-        'label_selector' => '',
-        'elements_group_selector' => '',
-        'markup' => '',
-        'show_label' => '',
-        'hide_group' => '',
-        'before' => '',
-        'after' => '',
-      )
-    )
+      'instance_settings' => _field_group_markup_format_settings_default(),
+    ),
   );
 
   return array(
     'display' => $group_additions,
-    'form' => $group_additions
+    'form' => $group_additions,
   );
 }
 
@@ -87,72 +116,63 @@ function field_group_markup_field_group_formatter_info() {
 function field_group_markup_field_group_format_settings($group) {
   if ($group->format_type == 'markup') {
     $format_settings = &$group->format_settings['instance_settings'];
-
-    $wrapper_selector = isset($format_settings['wrapper_selector']) ? $format_settings['wrapper_selector'] : '';
-    $group_selector = isset($format_settings['group_selector']) ? $format_settings['group_selector'] : '';
-    $label_selector = isset($format_settings['label_selector']) ? $format_settings['label_selector'] : '';
-    $elements_group_selector = isset($format_settings['elements_group_selector']) ? $format_settings['elements_group_selector'] : '';
-    $markup = isset($format_settings['markup']) ? $format_settings['markup'] : '';
-    $show_label = isset($format_settings['show_label']) ? $format_settings['show_label'] : 0;
-    $hide_group = isset($format_settings['hide_group']) ? $format_settings['hide_group'] : 0;
-    $before = isset($format_settings['before']) ? $format_settings['before'] : '';
-    $after = isset($format_settings['after']) ? $format_settings['after'] : '';
+    $format_settings = _field_group_markup_format_settings_default() + $format_settings;
 
     $form_settings = &$form['instance_settings'];
 
     $form_settings['wrapper_selector'] = array(
       '#title' => t('Wrapper selector'),
       '#type' => 'textfield',
-      '#default_value' => $wrapper_selector,
+      '#default_value' => $format_settings['wrapper_selector'],
     );
 
     $form_settings['group_selector'] = array(
       '#title' => t('Group selector'),
       '#type' => 'textfield',
-      '#default_value' => $group_selector,
+      '#default_value' => $format_settings['group_selector'],
     );
 
     $form_settings['label_selector'] = array(
       '#title' => t('Label selector'),
       '#type' => 'textfield',
-      '#default_value' => $label_selector,
+      '#default_value' => $format_settings['label_selector'],
     );
 
     $form_settings['show_label'] = array(
       '#title' => t('Show label'),
       '#type' => 'select',
-      '#default_value' => $show_label,
-      '#options' => array('Нет', 'Да'),
+      '#default_value' => $format_settings['show_label'],
+      '#options' => array(t('No'), t('Yes')),
     );
 
     $form_settings['elements_group_selector'] = array(
       '#title' => t('Elements group selector'),
       '#type' => 'textfield',
-      '#default_value' => $elements_group_selector,
+      '#default_value' => $format_settings['elements_group_selector'],
     );
 
     $form_settings['markup'] = array(
       '#title' => t('Markup'),
       '#type' => 'textfield',
-      '#default_value' => $markup,
+      '#default_value' => $format_settings['markup'],
     );
 
     $form_settings['hide_group'] = array(
       '#title' => t('Hide empty group'),
       '#type' => 'checkbox',
-      '#default_value' => $hide_group,
+      '#default_value' => $format_settings['hide_group'],
     );
 
     $form_settings['before'] = array(
       '#title' => t('Before'),
       '#type' => 'textfield',
-      '#default_value' => $before,
+      '#default_value' => $format_settings['before'],
     );
 
     $form_settings['after'] = array(
       '#title' => t('After'),
       '#type' => 'textfield',
-      '#default_value' => $after,
+      '#default_value' => $format_settings['after'],
     );
 
     return $form;
@@ -166,116 +186,67 @@ function field_group_markup_field_group_build_pre_render_alter(&$element) {
   foreach ($element['#fieldgroups'] as $group_name => &$group) {
     if ($group->format_type == 'markup') {
       $format_settings = &$group->format_settings['instance_settings'];
-
-      $wrapper_selector = isset($format_settings['wrapper_selector']) ? $format_settings['wrapper_selector'] : '';
-      $group_selector = isset($format_settings['group_selector']) ? $format_settings['group_selector'] : '';
-      $label_selector = isset($format_settings['label_selector']) ? $format_settings['label_selector'] : '';
-      $elements_group_selector = isset($format_settings['elements_group_selector']) ? $format_settings['elements_group_selector'] : '';
-      $markup = isset($format_settings['markup']) ? $format_settings['markup'] : '';
-      $show_label = isset($format_settings['show_label']) ? $format_settings['show_label'] : 0;
-      $hide_group = isset($format_settings['hide_group']) ? $format_settings['hide_group'] : 0;
-      $before = isset($format_settings['before']) ? $format_settings['before'] : '';
-      $after = isset($format_settings['after']) ? $format_settings['after'] : '';
+      $format_settings = _field_group_markup_format_settings_default() + $format_settings;
 
       $data = array(
         'wrapper_tag' => '',
-        'group_tag' => '',
-        'label_tag' => '',
-        'elements_group_tag' => '',
-        'label' => $element['#groups'][$group_name]->label,
         'wrapper_attrs' => array(),
+        'group_tag' => '',
         'group_attrs' => array(),
+        'label_tag' => '',
         'label_attrs' => array(),
+        'label' => $element['#groups'][$group_name]->label,
+        'elements_group_tag' => '',
         'elements_group_attrs' => array(),
-        'markup' => $markup,
+        'markup' => $format_settings['markup'],
         'group' => &$group,
         'element' => &$element,
       );
 
-      list($data['wrapper_tag'], $data['wrapper_attrs']) = _field_group_markup_parse_selector($wrapper_selector);
-      list($data['group_tag'], $data['group_attrs']) = _field_group_markup_parse_selector($group_selector);
-      list($data['label_tag'], $data['label_attrs']) = _field_group_markup_parse_selector($label_selector);
-      list($data['elements_group_tag'], $data['elements_group_attrs']) = _field_group_markup_parse_selector($elements_group_selector);
+      list($data['wrapper_tag'], $data['wrapper_attrs']) = _field_group_markup_parse_selector($format_settings['wrapper_selector']);
+      list($data['group_tag'], $data['group_attrs']) = _field_group_markup_parse_selector($format_settings['group_selector']);
+      list($data['label_tag'], $data['label_attrs']) = _field_group_markup_parse_selector($format_settings['label_selector']);
+      list($data['elements_group_tag'], $data['elements_group_attrs']) = _field_group_markup_parse_selector($format_settings['elements_group_selector']);
 
       // hook_field_group_markup_data_alter().
       drupal_alter('field_group_markup_data', $data);
 
-      // Group
-      $wrapper_prefix = '';
-      $wrapper_suffix = '';
-      if ($data['wrapper_tag'] || $data['wrapper_attrs']) {
-        if ($data['wrapper_tag'] == '') {
-          $data['wrapper_tag'] = 'div';
-        }
-        $wrapper_prefix = '<' . $data['wrapper_tag'] . drupal_attributes($data['wrapper_attrs']) . '>';
-        $wrapper_suffix = '</' . $data['wrapper_tag'] . '>';
-      }
-
-      // Group
-      $group_prefix = '';
-      $group_suffix = '';
-      if ($data['group_tag'] || $data['group_attrs']) {
-        if ($data['group_tag'] == '') {
-          $data['group_tag'] = 'div';
-        }
-        $group_prefix = '<' . $data['group_tag'] . drupal_attributes($data['group_attrs']) . '>';
-        $group_suffix = '</' . $data['group_tag'] . '>';
-      }
-
-      // Label
-      $label_prefix = '';
-      $label_suffix = '';
-      if ($data['label_tag'] || $data['label_attrs']) {
-        if ($data['label_tag'] == '') {
-          $data['label_tag'] = 'div';
-        }
-        $label_prefix = '<' . $data['label_tag'] . drupal_attributes($data['label_attrs']) . '>';
-        $label_suffix = '</' . $data['label_tag'] . '>';
-      }
-
-      // Elements group
-      $elements_group_prefix = '';
-      $elements_group_suffix = '';
-      if ($data['elements_group_tag'] || $data['elements_group_attrs']) {
-        if ($data['elements_group_tag'] == '') {
-          $data['elements_group_tag'] = 'div';
-        }
-        $elements_group_prefix = '<' . $data['elements_group_tag'] . drupal_attributes($data['elements_group_attrs']) . '>';
-        $elements_group_suffix = '</' . $data['elements_group_tag'] . '>';
-      }
+      // Wrap
+      $wrapper_wrap = _field_group_markup_wrapper($data['wrapper_tag'], $data['wrapper_attrs']);
+      $group_wrap = _field_group_markup_wrapper($data['group_tag'], $data['group_attrs']);
+      $label_wrap = _field_group_markup_wrapper($data['label_tag'], $data['label_attrs']);
+      $elements_group_wrap = _field_group_markup_wrapper($data['elements_group_tag'], $data['elements_group_attrs']);
 
       // Structure render
-      $element_group = array();
+      $render_group = array(
+        '#weight' => $group->weight,
+        '#markup' => $data['markup'],
+      );
 
-      $element_group['#weight'] = $group->weight;
-
-      $element_group['#prefix'] = $before . $wrapper_prefix . $group_prefix;
-      if ($show_label) {
-        $element_group['#prefix'] .= $label_prefix;
-        $element_group['#prefix'] .= $data['label'];
-        $element_group['#prefix'] .= $label_suffix;
+      $render_group['#prefix'] = "{$format_settings['before']}{$wrapper_wrap['#prefix']}{$group_wrap['#prefix']}";
+      if ($format_settings['show_label']) {
+        $render_group['#prefix'] .= "{$label_wrap['#prefix']}{$data['label']}{$label_wrap['#suffix']}";
       }
 
-      $element_group['#prefix'] .= $elements_group_prefix;
-      $element_group['#suffix'] = $elements_group_suffix . $group_suffix . $wrapper_suffix . $after;
-
-      // Markup render
-      $element_group['#markup'] = $data['markup'];
+      $render_group['#prefix'] .= $elements_group_wrap['#prefix'];
+      $render_group['#suffix'] = "{$elements_group_wrap['#suffix']}{$group_wrap['#suffix']}{$wrapper_wrap['#suffix']}{$format_settings['after']}";
 
       // Show field group.
-      if (!$hide_group) {
-        $element_group['_markup'] = array(
+      if (!$format_settings['hide_group']) {
+        $render_group['_markup'] = array(
           '#type' => 'markup',
-          '#markup' => ''
+          '#markup' => '',
         );
       }
 
       // Search field group element
       $filter = function (&$item, $key, $data) {
         if ($key === $data['group_name'] && is_array($item)) {
-          $item = array_merge($item, $data['element_group']);
+          $item = array_merge($item, $data['render_group']);
+          return;
         }
-        elseif (is_array($item)) {
+        
+        if (is_array($item)) {
           array_walk($item, $data['callback'], $data);
         }
       };
@@ -283,7 +254,7 @@ function field_group_markup_field_group_build_pre_render_alter(&$element) {
       array_walk($element, $filter, array(
         'group_name' => $group_name,
         'callback' => $filter,
-        'element_group' => $element_group,
+        'render_group' => $render_group,
       ));
     }
   }
